@@ -516,7 +516,10 @@ For issues or questions:
 
 ## License
 
-This pipeline is provided as-is for research purposes. Individual tools retain their original licenses.
+MIT License
+
+Copyright (c) 2026 Da Lu, Hannan Laboratory, The Florey Institute of Neuroscience and Mental Health
+
 
 ## Authors
 
