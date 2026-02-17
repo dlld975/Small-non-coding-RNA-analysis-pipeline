@@ -506,7 +506,6 @@ If you use this pipeline, please cite the original tools:
 - **proTRAC**: Rosenkranz D, et al. (2015) *Bioinformatics*
 - **SPORTS**: Shi J, et al. (2018) *Bioinformatics*
 - **tDRMapper**: Selitsky SR, et al. (2015) *RNA*
-- and Da Lu for the development of this pipeline/Hannan Lab
 
 ## Support
 
@@ -521,7 +520,7 @@ This pipeline is provided as-is for research purposes. Individual tools retain t
 
 ## Authors
 
-Hannan Group - Da Lu
+Da Lu, Anthony Hannan Group, Hannan Laboratory, The Florey Institute of Neuroscience and Mental Health
 
 ## Acknowledgments
 
