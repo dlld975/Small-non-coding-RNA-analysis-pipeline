@@ -1,6 +1,6 @@
 # Workflow
 
-This repository presents the small non-coding RNA pipeline as sectioned code blocks in the main `README.md` instead of separate R script files.
+This repository presents the small non-coding RNA pipeline as sectioned code blocks in the main `README.md` and as matching R script templates in `scripts/`.
 
 Use the README sections in this order:
 
@@ -13,6 +13,21 @@ Use the README sections in this order:
 7. Volcano Plot
 8. MA Plot
 9. Heatmap
+
+## Script Templates
+
+The same workflows are available as editable R scripts:
+
+```text
+scripts/
+|-- conventional_de.R
+|-- sports_summary_to_counts.R
+|-- tdrmapper_de.R
+|-- protrac_cluster_de.R
+|-- general_count_matrix_de.R
+|-- non_overlapping_clusters.R
+`-- de_plots.R
+```
 
 ## How to Use the Code Sections
 
