@@ -1,0 +1,46 @@
+# R session files
+.Rhistory
+.RData
+.Rproj.user/
+
+# Local config
+config/config.yml
+
+# Raw sequencing and alignment data
+data/
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+*.bam
+*.bai
+*.sam
+
+# Large references and indexes
+reference/
+*.fa
+*.fasta
+*.fai
+*.bt2
+*.ebwt
+
+# Generated results
+results/
+output/
+outputs/
+*.RData
+*.rds
+*.xlsx
+*.csv
+*.txt
+*.tif
+*.tiff
+*.png
+*.pdf
+
+# Keep repository documentation PDFs
+!docs/**/*.pdf
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,11 @@
+sample	condition	summary_file
+C1	CONTROL	path/to/C1_summary.txt
+C2	CONTROL	path/to/C2_summary.txt
+C3	CONTROL	path/to/C3_summary.txt
+C4	CONTROL	path/to/C4_summary.txt
+C5	CONTROL	path/to/C5_summary.txt
+T1	TREATMENT	path/to/T1_summary.txt
+T2	TREATMENT	path/to/T2_summary.txt
+T3	TREATMENT	path/to/T3_summary.txt
+T4	TREATMENT	path/to/T4_summary.txt
+T5	TREATMENT	path/to/T5_summary.txt

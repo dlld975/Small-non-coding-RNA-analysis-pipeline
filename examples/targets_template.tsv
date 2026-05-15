@@ -1,0 +1,11 @@
+Sample	Treatment	File_name
+C1	CONTROL	path/to/subjuncts_control_1.bam
+C2	CONTROL	path/to/subjuncts_control_2.bam
+C3	CONTROL	path/to/subjuncts_control_3.bam
+C4	CONTROL	path/to/subjuncts_control_4.bam
+C5	CONTROL	path/to/subjuncts_control_5.bam
+T1	TREATMENT	path/to/subjuncts_treatment_1.bam
+T2	TREATMENT	path/to/subjuncts_treatment_2.bam
+T3	TREATMENT	path/to/subjuncts_treatment_3.bam
+T4	TREATMENT	path/to/subjuncts_treatment_4.bam
+T5	TREATMENT	path/to/subjuncts_treatment_5.bam

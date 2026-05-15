@@ -1,0 +1,18 @@
+project_name: small-noncoding-rna-analysis
+control_label: CONTROL
+treatment_label: TREATMENT
+
+paths:
+  raw_fastq_dir: data/raw
+  reference_fasta: reference/small_rna_reference.fa
+  sports_summary_dir: results/sports/summaries
+  tdrmapper_count_matrix: results/tDRMapper/tRNA_count_matrix.txt
+  protrac_count_matrix: results/proTRAC/piRNA_cluster_count_matrix_renamed.txt
+  output_dir: results
+
+deseq2:
+  design: "~ Treatment"
+  adjusted_p_value_cutoff: 0.05
+  min_count: 10
+  min_samples: 2
+  label_log2fc_threshold: 1
