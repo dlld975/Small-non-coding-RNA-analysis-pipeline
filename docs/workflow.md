@@ -1,113 +1,47 @@
 # Workflow
 
-This pipeline organizes differential expression analysis for small non-coding RNA datasets. The current scripts are templates, so each project should update paths, sample labels, treatment names, and filtering thresholds before execution.
+This repository presents the small non-coding RNA pipeline as sectioned code blocks in the main `README.md` instead of separate R script files.
 
-## 1. Prepare Project Metadata
+Use the README sections in this order:
 
-Create a metadata table with one row per sample. At minimum, keep these fields consistent across scripts:
+1. Conventional Mapping and DE
+2. SPORTS Summary to Count Matrix
+3. tDRMapper DE
+4. proTRAC Cluster DE
+5. General Count Matrix DE
+6. Non-overlapping Cluster Comparison
+7. Volcano Plot
+8. MA Plot
+9. Heatmap
 
-- `sample`
-- `condition`
-- `file`
+## How to Use the Code Sections
 
-Use `CONTROL` as the reference condition unless your study design requires a different baseline.
-
-## 2. Choose an Analysis Module
-
-### Conventional Reference-based Workflow
-
-Use [scripts/Conventional_DE.R](../scripts/Conventional_DE.R) when you have a custom reference FASTA containing small RNA transcripts such as miRNAs, tsRNAs, piRNAs, or rsRNAs.
-
-Main steps:
-
-1. Build an Rsubread index from the reference FASTA.
-2. Align FASTQ files with `subjunc`.
-3. Build a feature annotation table from the FASTA.
-4. Count reads with `featureCounts`.
-5. Run DESeq2.
-6. Export tables and plots.
-
-### SPORTS Workflow
-
-Use [scripts/SPORTS_DE.R](../scripts/SPORTS_DE.R) when SPORTS has already produced per-sample summary files.
-
-Main steps:
-
-1. Read all `*_summary.txt` files.
-2. Classify entries into miRNA, tsRNA, rsRNA, or other.
-3. Build count matrices for each group.
-4. Run DESeq2 separately for miRNA, tsRNA, and rsRNA.
-5. Export tables and plots.
-
-### tDRMapper Workflow
-
-Use [scripts/tDRMapper_DE.R](../scripts/tDRMapper_DE.R) when tDRMapper has produced a tRNA-derived RNA count matrix.
-
-Main steps:
-
-1. Read `tRNA_count_matrix.txt`.
-2. Define control and treatment metadata.
-3. Filter low-count tRNA clusters.
-4. Run DESeq2.
-5. Export significant and total tRNA expression tables.
-6. Generate volcano plot and heatmap.
-
-### proTRAC Workflow
-
-Use [scripts/proTRAC_DE.R](../scripts/proTRAC_DE.R) when proTRAC has produced piRNA cluster count matrices.
-
-Main steps:
-
-1. Read `piRNA_cluster_count_matrix_renamed.txt`.
-2. Define control and treatment metadata.
-3. Filter low-count piRNA clusters.
-4. Run DESeq2.
-5. Export significant and total piRNA cluster expression tables.
-6. Generate MA plot, volcano plot, and heatmap.
-
-## 3. Update Placeholders
-
-Before running a script, search for these placeholders and replace them with study-specific values:
+Copy the section you need into R or RStudio, then replace placeholders such as:
 
 ```text
-your_directory_here
-your_output_path
-your_summary_directory_path
+your_working_directory
+your_output_directory
+yourfile.fastq.gz
+your_reference.fa
+your_count_matrix.txt
+your_metadata.csv
 your_TREATMENT
-your_treatment
 CONTROL
-your_fasta.fa
-your_treatment_file.fastqsanger.gz
-your_control_file.fastqsanger.gz
 ```
 
-## 4. Check Sample Ordering
+Keep sample names consistent between count matrices and metadata files. DESeq2 requires count matrix columns and metadata row names to match exactly.
 
-DESeq2 requires the count matrix columns and metadata row names to be in the same order. Each script includes a `stopifnot()` check or matching logic. If this check fails, fix the sample names before continuing.
-
-## 5. Review Thresholds
-
-The scripts currently use common defaults:
-
-- adjusted p-value cutoff: `0.05` or `0.10`, depending on module
-- low-count filtering: examples include `rowSums(counts(dds) >= 10) >= 2`
-- volcano plot fold-change label threshold: `abs(log2FoldChange) > 1`
-
-Record any threshold changes in your project notes so results remain reproducible.
-
-## 6. Save Results
-
-Recommended output organization:
+## Suggested Output Organization
 
 ```text
 results/
-├── conventional/
-├── sports/
-│   ├── miRNA/
-│   ├── tsRNA/
-│   └── rsRNA/
-├── tDRMapper/
-└── proTRAC/
+|-- conventional/
+|-- sports/
+|   |-- miRNA/
+|   |-- tsRNA/
+|   `-- rsRNA/
+|-- tDRMapper/
+`-- proTRAC/
 ```
 
-Generated outputs are ignored by Git by default because they can be large and project-specific.
+Generated outputs are ignored by Git because they can be large and project-specific.
