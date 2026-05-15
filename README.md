@@ -48,6 +48,12 @@ BiocManager::install(c("DESeq2", "Rsubread", "Biostrings"))
 
 External tools used by the upstream workflows may include Perl, Python, Bowtie, SAMtools, BEDtools, proTRAC, SPORTS, and tDRMapper. See the PDFs in `docs/tool_documentation/`.
 
+Upstream tool links:
+
+- SPORTS1.1 GitHub: https://github.com/junchaoshi/sports1.1
+- tDRmapper GitHub: https://github.com/sararselitsky/tDRmapper
+- proTRAC official source page: https://sourceforge.net/projects/protrac/
+
 ## R Script Templates
 
 The full workflow code is shown in sections below, and matching R script templates are also provided:
@@ -136,7 +142,7 @@ save(dds, res, sig_res, res_sorted, sig_res_sorted, file = "your_DE_results.RDat
 
 ## 2. SPORTS Summary to Count Matrix
 
-Use this section after SPORTS has generated one `*_summary.txt` file per sample.
+Use this section after SPORTS has generated one `*_summary.txt` file per sample. SPORTS1.1 is available at https://github.com/junchaoshi/sports1.1.
 
 ```r
 setwd("your_working_directory")
@@ -208,7 +214,7 @@ write.table(make_matrix("rsRNA"), file.path(out_dir, "your_rsRNA_counts.txt"), s
 
 ## 3. tDRMapper DE
 
-Use this section for tDRMapper tRNA-derived RNA count matrices.
+Use this section for tDRMapper tRNA-derived RNA count matrices. tDRmapper is available at https://github.com/sararselitsky/tDRmapper.
 
 ```r
 setwd("your_tdrmapper_results_directory")
@@ -253,7 +259,7 @@ write.csv(as.data.frame(sig_res), "your_significant_tDRMapper_DE_results.csv", r
 
 ## 4. proTRAC Cluster DE
 
-Use this section for proTRAC piRNA cluster count matrices.
+Use this section for proTRAC piRNA cluster count matrices. proTRAC is officially distributed at https://sourceforge.net/projects/protrac/.
 
 ```r
 setwd("your_protrac_results_directory")
@@ -535,9 +541,9 @@ Please cite the upstream tools used in your analysis, including SPORTS, tDRMappe
 
 ## References
 
-- Shi J, Ko EA, Sanders KM, Chen Q, Zhou T. SPORTS1.0: a tool for annotating and profiling non-coding RNAs optimized for rRNA- and tRNA-derived small RNAs. *Genomics, Proteomics & Bioinformatics*. 2018;16(2):144-151. doi:10.1016/j.gpb.2018.04.004.
-- Selitsky SR, Sethupathy P. tDRmapper: challenges and solutions to mapping, naming, and quantifying tRNA-derived RNAs from human small RNA-sequencing data. *BMC Bioinformatics*. 2015;16:354. doi:10.1186/s12859-015-0800-0.
-- Rosenkranz D, Zischler H. proTRAC: a software for probabilistic piRNA cluster detection, visualization and analysis. *BMC Bioinformatics*. 2012;13:5. doi:10.1186/1471-2105-13-5.
+- Shi J, Ko EA, Sanders KM, Chen Q, Zhou T. SPORTS1.0: a tool for annotating and profiling non-coding RNAs optimized for rRNA- and tRNA-derived small RNAs. *Genomics, Proteomics & Bioinformatics*. 2018;16(2):144-151. doi:10.1016/j.gpb.2018.04.004. GitHub: https://github.com/junchaoshi/sports1.1.
+- Selitsky SR, Sethupathy P. tDRmapper: challenges and solutions to mapping, naming, and quantifying tRNA-derived RNAs from human small RNA-sequencing data. *BMC Bioinformatics*. 2015;16:354. doi:10.1186/s12859-015-0800-0. GitHub: https://github.com/sararselitsky/tDRmapper.
+- Rosenkranz D, Zischler H. proTRAC: a software for probabilistic piRNA cluster detection, visualization and analysis. *BMC Bioinformatics*. 2012;13:5. doi:10.1186/1471-2105-13-5. Official source: https://sourceforge.net/projects/protrac/.
 - Love MI, Huber W, Anders S. Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. *Genome Biology*. 2014;15:550. doi:10.1186/s13059-014-0550-8.
 - Liao Y, Smyth GK, Shi W. featureCounts: an efficient general purpose program for assigning sequence reads to genomic features. *Bioinformatics*. 2014;30(7):923-930. doi:10.1093/bioinformatics/btt656.
 - Liao Y, Smyth GK, Shi W. The R package Rsubread is easier, faster, cheaper and better for alignment and quantification of RNA sequencing reads. *Nucleic Acids Research*. 2019;47(8):e47. doi:10.1093/nar/gkz114.
