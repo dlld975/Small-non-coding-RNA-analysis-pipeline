@@ -5,9 +5,9 @@ This repository presents the small non-coding RNA pipeline as sectioned code blo
 Use the README sections in this order:
 
 1. Conventional Mapping and DE
-2. SPORTS Summary to Count Matrix
-3. tDRMapper DE
-4. proTRAC Cluster DE
+2. SPORTS Bash workflow, then SPORTS Summary to Count Matrix and R DE
+3. tDRMapper Bash workflow, then tDRMapper R DE
+4. proTRAC Bash cluster preparation, then proTRAC Cluster R DE
 5. General Count Matrix DE
 6. proTRAC Non-DE Unique Cluster Workflow
 7. Volcano Plot
@@ -21,13 +21,48 @@ The same workflows are available as editable script templates:
 ```text
 scripts/
 |-- conventional_de.R
+|-- sports_run_workflow.sh
 |-- sports_summary_to_counts.R
+|-- tdrmapper_run_workflow.sh
 |-- tdrmapper_de.R
+|-- protrac_run_prepare_clusters.sh
 |-- protrac_cluster_de.R
 |-- general_count_matrix_de.R
 |-- protrac_non_de_unique_clusters.sh
 `-- de_plots.R
 ```
+
+## Tool-Specific Order
+
+SPORTS:
+
+```text
+scripts/sports_run_workflow.sh
+scripts/sports_summary_to_counts.R
+scripts/general_count_matrix_de.R
+```
+
+tDRMapper:
+
+```text
+scripts/tdrmapper_run_workflow.sh
+scripts/tdrmapper_de.R
+```
+
+proTRAC cluster DE:
+
+```text
+scripts/protrac_run_prepare_clusters.sh
+scripts/protrac_cluster_de.R
+```
+
+proTRAC unique/no-overlap clusters:
+
+```text
+scripts/protrac_non_de_unique_clusters.sh
+```
+
+This unique-cluster workflow is not a DESeq2 step.
 
 ## How to Use the Code Sections
 

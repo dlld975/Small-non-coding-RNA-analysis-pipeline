@@ -12,8 +12,11 @@ Replace every placeholder such as `yourfile.fastq.gz`, `your_reference.fa`, `you
 |-- LICENSE
 |-- scripts/
 |   |-- conventional_de.R
+|   |-- sports_run_workflow.sh
 |   |-- sports_summary_to_counts.R
+|   |-- tdrmapper_run_workflow.sh
 |   |-- tdrmapper_de.R
+|   |-- protrac_run_prepare_clusters.sh
 |   |-- protrac_cluster_de.R
 |   |-- general_count_matrix_de.R
 |   |-- protrac_non_de_unique_clusters.sh
@@ -61,14 +64,28 @@ The full workflow code is shown in sections below, and matching R script templat
 | Section | Script |
 | --- | --- |
 | Conventional Mapping and DE | `scripts/conventional_de.R` |
+| SPORTS Bash workflow | `scripts/sports_run_workflow.sh` |
 | SPORTS Summary to Count Matrix | `scripts/sports_summary_to_counts.R` |
+| tDRMapper Bash workflow | `scripts/tdrmapper_run_workflow.sh` |
 | tDRMapper DE | `scripts/tdrmapper_de.R` |
+| proTRAC Bash cluster preparation | `scripts/protrac_run_prepare_clusters.sh` |
 | proTRAC Cluster DE | `scripts/protrac_cluster_de.R` |
 | General Count Matrix DE | `scripts/general_count_matrix_de.R` |
 | proTRAC non-DE unique/no-overlap clusters | `scripts/protrac_non_de_unique_clusters.sh` |
 | Volcano, MA, and heatmap plots | `scripts/de_plots.R` |
 
 Edit the user settings at the top of each script before running.
+
+## Bash Then R DE Workflow Order
+
+For the tool-specific modules, run the upstream command-line workflow first, then run the R DE script:
+
+| Tool | Step 1: Bash/upstream workflow | Step 2: R DE |
+| --- | --- | --- |
+| SPORTS | `scripts/sports_run_workflow.sh` creates per-sample SPORTS outputs and `*_summary.txt` files | `scripts/sports_summary_to_counts.R`, then `scripts/general_count_matrix_de.R` for miRNA, tsRNA, or rsRNA matrices |
+| tDRMapper | `scripts/tdrmapper_run_workflow.sh` runs tDRMapper and builds `your_tRNA_count_matrix.txt` | `scripts/tdrmapper_de.R` |
+| proTRAC | `scripts/protrac_run_prepare_clusters.sh` runs proTRAC and prepares a piRNA cluster count matrix | `scripts/protrac_cluster_de.R` |
+| proTRAC unique clusters | `scripts/protrac_non_de_unique_clusters.sh` merges treatment/control GTFs separately and finds no-overlap clusters | No DESeq2 step; use unique BED files for gene intersection and functional study |
 
 ## 1. Conventional Mapping and DE
 
@@ -149,6 +166,14 @@ save(dds, res, sig_res, res_sorted, sig_res_sorted, file = "your_DE_results.RDat
 
 Use this section after SPORTS has generated one `*_summary.txt` file per sample. SPORTS1.1 is available at https://github.com/junchaoshi/sports1.1.
 
+Upstream Bash step:
+
+```bash
+bash scripts/sports_run_workflow.sh
+```
+
+Then build count matrices with R:
+
 ```r
 setwd("your_working_directory")
 
@@ -221,6 +246,14 @@ write.table(make_matrix("rsRNA"), file.path(out_dir, "your_rsRNA_counts.txt"), s
 
 Use this section for tDRMapper tRNA-derived RNA count matrices. tDRmapper is available at https://github.com/sararselitsky/tDRmapper.
 
+Upstream Bash step:
+
+```bash
+bash scripts/tdrmapper_run_workflow.sh
+```
+
+Then run R DE on the generated tRNA count matrix:
+
 ```r
 setwd("your_tdrmapper_results_directory")
 
@@ -269,6 +302,14 @@ write.csv(as.data.frame(sig_res), "your_significant_tDRMapper_DE_results.csv", r
 ## 4. proTRAC Cluster DE
 
 Use this section for proTRAC piRNA cluster count matrices. proTRAC is officially distributed at https://sourceforge.net/projects/protrac/.
+
+Upstream Bash step:
+
+```bash
+bash scripts/protrac_run_prepare_clusters.sh
+```
+
+Then run R DE on the generated piRNA cluster count matrix:
 
 ```r
 setwd("your_protrac_results_directory")
