@@ -17,6 +17,7 @@ control_label <- "CONTROL"
 output_prefix <- "your_conventional"
 min_count_per_feature <- your_min_count_threshold
 min_samples_with_count <- your_min_sample_threshold
+adjusted_p_value_cutoff <- your_adjusted_p_value_cutoff
 
 setwd(working_directory)
 
@@ -60,7 +61,7 @@ dds <- dds[rowSums(counts(dds) >= min_count_per_feature) >= min_samples_with_cou
 dds <- DESeq(dds)
 
 res <- results(dds, contrast = c("Treatment", treatment_label, control_label))
-sig_res <- res[which(res$padj < 0.05 & !is.na(res$padj)), ]
+sig_res <- res[which(res$padj < adjusted_p_value_cutoff & !is.na(res$padj)), ]
 
 colnames(res)[colnames(res) == "padj"] <- "adj.P.Val"
 colnames(sig_res)[colnames(sig_res) == "padj"] <- "adj.P.Val"

@@ -10,7 +10,7 @@ metadata_file <- "your_metadata.csv"
 output_prefix <- "your_output_name"
 treatment_label <- "your_TREATMENT"
 control_label <- "CONTROL"
-padj_cutoff <- 0.05
+adjusted_p_value_cutoff <- your_adjusted_p_value_cutoff
 min_count <- your_min_count_threshold
 min_samples <- your_min_sample_threshold
 
@@ -19,7 +19,7 @@ run_deseq2 <- function(count_file,
                        output_prefix,
                        treatment_label = "your_TREATMENT",
                        control_label = "CONTROL",
-                       padj_cutoff = 0.05,
+                       adjusted_p_value_cutoff = your_adjusted_p_value_cutoff,
                        min_count = your_min_count_threshold,
                        min_samples = your_min_sample_threshold) {
   count_data <- read.csv(
@@ -49,7 +49,7 @@ run_deseq2 <- function(count_file,
   dds <- DESeq(dds)
 
   res <- results(dds, contrast = c("Treatment", treatment_label, control_label))
-  sig_res <- res[which(res$padj < padj_cutoff & !is.na(res$padj)), ]
+  sig_res <- res[which(res$padj < adjusted_p_value_cutoff & !is.na(res$padj)), ]
 
   colnames(res)[colnames(res) == "padj"] <- "adj.P.Val"
   colnames(sig_res)[colnames(sig_res) == "padj"] <- "adj.P.Val"
@@ -69,7 +69,7 @@ de <- run_deseq2(
   output_prefix = output_prefix,
   treatment_label = treatment_label,
   control_label = control_label,
-  padj_cutoff = padj_cutoff,
+  adjusted_p_value_cutoff = adjusted_p_value_cutoff,
   min_count = min_count,
   min_samples = min_samples
 )
