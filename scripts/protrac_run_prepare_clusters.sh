@@ -11,6 +11,10 @@ sam_dir="your_sam_or_bam_directory"
 output_dir="your_protrac_output_directory"
 reference_genome="your_reference_genome.fa"
 threads="your_thread_number"
+pirna_min_length="your_piRNA_min_length"
+pirna_max_length="your_piRNA_max_length"
+first_base_or_tenth_base_bias="your_1T_or_10A_bias_threshold"
+cluster_strand_bias="your_cluster_strand_bias_threshold"
 
 merged_clusters_gtf="your_combined_piRNA_clusters.gtf"
 merged_clusters_bed="your_combined_piRNA_clusters.bed"
@@ -31,10 +35,10 @@ for alignment in "$sam_dir"/*.sam "$sam_dir"/*.bam; do
   "$protrac_bin" \
     -map "$alignment" \
     -genome "$reference_genome" \
-    -pimin 21 \
-    -pimax 33 \
-    -1Tor10A 0.75 \
-    -clstrand 0.75 \
+    -pimin "$pirna_min_length" \
+    -pimax "$pirna_max_length" \
+    -1Tor10A "$first_base_or_tenth_base_bias" \
+    -clstrand "$cluster_strand_bias" \
     -o "$sample_out" \
     -p "$threads" \
     > "$sample_out/${sample}_proTRAC.log" 2>&1
@@ -62,10 +66,17 @@ bam_files=("$sam_dir"/*.bam)
 bedtools multicov -bams "${bam_files[@]}" -bed "$merged_clusters_bed" > "${count_matrix%.txt}.raw.tsv"
 
 # Convert BED + count columns to a DESeq2-friendly count matrix.
-awk 'BEGIN{FS=OFS="\t"}
-NR==1 {
+sample_names=""
+for bam in "${bam_files[@]}"; do
+  sample="$(basename "$bam")"
+  sample="${sample%.bam}"
+  sample_names="${sample_names}${sample_names:+,}${sample}"
+done
+
+awk -v sample_names="$sample_names" 'BEGIN{FS=OFS="\t";
+  sample_count=split(sample_names, samples, ",")
   printf "cluster"
-  for (i=7; i<=NF; i++) printf OFS "your_sample_"(i-6)
+  for (i=1; i<=sample_count; i++) printf OFS samples[i]
   printf ORS
 }
 {

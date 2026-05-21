@@ -439,6 +439,7 @@ cd "your_protrac_project_directory"
 treatment_label="your_TREATMENT"
 control_label="CONTROL"
 gene_gtf="your_gene_annotation.gtf"
+intersect_gene_name_column="your_gene_name_column_after_bedtools_intersect"
 
 # 1. Merge treatment and control proTRAC cluster GTF files separately.
 cat proTRAC_your_treatment_sample*/clusters.gtf > "${treatment_label}combined.gtf"
@@ -537,10 +538,10 @@ bedtools intersect \
   -wa -wb \
   > "${treatment_label}_intersected_genes.bed"
 
-awk 'BEGIN{FS=OFS="\t"}
+awk -v gene_col="$intersect_gene_name_column" 'BEGIN{FS=OFS="\t"}
 {
   key=$1":"$2"-"$3":"$6
-  gene=$10
+  gene=$gene_col
   if (gene=="") gene="NA"
   if (!seen[key,gene]++) {
     genes[key] = (genes[key]=="" ? gene : genes[key]","gene)
@@ -569,10 +570,10 @@ bedtools intersect \
   -wa -wb \
   > "${control_label}_intersected_genes.bed"
 
-awk 'BEGIN{FS=OFS="\t"}
+awk -v gene_col="$intersect_gene_name_column" 'BEGIN{FS=OFS="\t"}
 {
   key=$1":"$2"-"$3":"$6
-  gene=$10
+  gene=$gene_col
   if (gene=="") gene="NA"
   if (!seen[key,gene]++) {
     genes[key] = (genes[key]=="" ? gene : genes[key]","gene)
@@ -600,7 +601,7 @@ Notes:
 - Use `*_unique_noOverlap.bed` files for downstream gene intersection and functional study.
 - Treatment unique clusters can be interpreted as treatment-specific/upregulated-like clusters, and control unique clusters as control-specific/downregulated-like clusters, but this is a presence/absence cluster comparison rather than a statistical DE test.
 - If the cluster strand is `.`, avoid `bedtools intersect -s`; strand-specific matching can return no gene overlaps.
-- In the gene-intersection output, gene names are expected in column 10 because `genes.bed` contributes `chr/start/end/gene` after `-wa -wb`.
+- Set `intersect_gene_name_column` to the gene-name field in your `bedtools intersect -wa -wb` output. This depends on how many columns are present in the cluster BED file and gene BED file.
 
 ## 7. Volcano Plot
 

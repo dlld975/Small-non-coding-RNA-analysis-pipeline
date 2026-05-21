@@ -12,6 +12,7 @@ treatment_label="your_TREATMENT"
 control_label="CONTROL"
 gene_gtf="your_gene_annotation.gtf"
 genes_bed="genes.bed"
+intersect_gene_name_column="your_gene_name_column_after_bedtools_intersect"
 
 cd "$workdir"
 
@@ -124,11 +125,11 @@ annotate_unique_clusters() {
     bedtools intersect -a "$unique_bed" -b "$genes_bed" -wa -wb > "$intersect_file"
   fi
 
-  # gene is column 10 because genes.bed contributes chr/start/end/gene after -wa -wb.
-  awk 'BEGIN{FS=OFS="\t"}
+  # Set intersect_gene_name_column to the gene-name field in the bedtools -wa -wb output.
+  awk -v gene_col="$intersect_gene_name_column" 'BEGIN{FS=OFS="\t"}
   {
     key=$1":"$2"-"$3":"$6
-    gene=$10
+    gene=$gene_col
     if (gene=="") gene="NA"
     if (!seen[key,gene]++) {
       genes[key] = (genes[key]=="" ? gene : genes[key]","gene)

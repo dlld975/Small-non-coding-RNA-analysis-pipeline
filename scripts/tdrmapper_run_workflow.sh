@@ -11,6 +11,8 @@ trna_reference="your_tRNA_reference.fa"
 fastq_dir="your_trimmed_fastq_directory"
 output_dir="your_tdrmapper_output_directory"
 count_matrix="your_tRNA_count_matrix.txt"
+tdr_feature_column="your_tRNA_ID_column_number"
+tdr_count_column="your_read_count_column_number"
 
 mkdir -p "$output_dir"
 cd "$output_dir"
@@ -31,11 +33,11 @@ for fastq in "$fastq_dir"/*.fastq "$fastq_dir"/*.fastq.gz "$fastq_dir"/*.fastqsa
 done
 
 # Build a count matrix from tDRMapper speciesInfo outputs.
-# This template assumes tRNA ID is in column 2 and read count is in column 4,
-# matching the workflow notes. Check your tDRMapper output before running.
+# Set tdr_feature_column to the tRNA ID column and tdr_count_column to the
+# read-count column in your tDRMapper speciesInfo files.
 find "$output_dir" -name "*.hq_cs.mapped.speciesInfo.txt" -print > speciesInfo_files.txt
 
-awk 'BEGIN{FS=OFS="\t"}
+awk -v feature_col="$tdr_feature_column" -v count_col="$tdr_count_column" 'BEGIN{FS=OFS="\t"}
 FNR==1 {
   sample=FILENAME
   sub(/.*\//, "", sample)
@@ -43,8 +45,8 @@ FNR==1 {
   samples[sample]=1
 }
 {
-  feature=$2
-  count=$4
+  feature=$feature_col
+  count=$count_col
   if (feature != "" && count ~ /^[0-9.]+$/) {
     counts[feature,sample] += count
     features[feature]=1
