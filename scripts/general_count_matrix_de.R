@@ -11,8 +11,8 @@ output_prefix <- "your_output_name"
 treatment_label <- "your_TREATMENT"
 control_label <- "CONTROL"
 padj_cutoff <- 0.05
-min_count <- 10
-min_samples <- 2
+min_count <- your_min_count_threshold
+min_samples <- your_min_sample_threshold
 
 run_deseq2 <- function(count_file,
                        metadata_file,
@@ -20,8 +20,8 @@ run_deseq2 <- function(count_file,
                        treatment_label = "your_TREATMENT",
                        control_label = "CONTROL",
                        padj_cutoff = 0.05,
-                       min_count = 10,
-                       min_samples = 2) {
+                       min_count = your_min_count_threshold,
+                       min_samples = your_min_sample_threshold) {
   count_data <- read.csv(
     count_file,
     sep = "\t",
@@ -42,6 +42,9 @@ run_deseq2 <- function(count_file,
     design = ~ Treatment
   )
 
+  # Filter low-count features before DESeq2.
+  # min_count = minimum raw count required in a sample.
+  # min_samples = minimum number of samples that must reach min_count.
   dds <- dds[rowSums(counts(dds) >= min_count) >= min_samples, ]
   dds <- DESeq(dds)
 

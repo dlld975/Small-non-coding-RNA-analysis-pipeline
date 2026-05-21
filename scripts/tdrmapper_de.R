@@ -11,6 +11,8 @@ treatment_label <- "your_TREATMENT"
 control_label <- "CONTROL"
 output_prefix <- "your_tDRMapper"
 padj_cutoff <- 0.05
+min_count_per_feature <- your_min_count_threshold
+min_samples_with_count <- your_min_sample_threshold
 
 setwd(working_directory)
 
@@ -35,7 +37,9 @@ dds <- DESeqDataSetFromMatrix(
   design = ~ Treatment
 )
 
-dds <- dds[rowSums(counts(dds) >= 100) >= 2, ]
+# Filter low-count tDR/tRNA features before DESeq2.
+# Choose these thresholds based on sequencing depth and replicate number.
+dds <- dds[rowSums(counts(dds) >= min_count_per_feature) >= min_samples_with_count, ]
 dds <- DESeq(dds)
 
 res <- results(dds, contrast = c("Treatment", treatment_label, control_label))
