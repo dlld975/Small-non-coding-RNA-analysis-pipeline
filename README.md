@@ -28,8 +28,7 @@ Replace every placeholder such as `yourfile.fastq.gz`, `your_reference.fa`, `you
 |   |-- sports_samples_template.tsv
 |   `-- targets_template.tsv
 `-- docs/
-    |-- workflow.md
-    `-- tool_documentation/
+    `-- workflow.md
 ```
 
 ## Requirements
@@ -49,7 +48,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE)) {
 BiocManager::install(c("DESeq2", "Rsubread", "Biostrings"))
 ```
 
-External tools used by the upstream workflows may include Perl, Python, Bowtie, SAMtools, BEDtools, proTRAC, SPORTS, and tDRMapper. See the PDFs in `docs/tool_documentation/`.
+External tools used by the upstream workflows may include Perl, Python, Bowtie, SAMtools, BEDtools, proTRAC, SPORTS, and tDRMapper.
 
 Upstream tool links:
 
@@ -758,10 +757,6 @@ Common outputs include:
 - `your_MA_plot.png`
 - `your_heatmap.png`
 - `your_DE_results.RData`
-
-## Documentation
-
-Tool documentation PDFs are stored in `docs/tool_documentation/`.
 
 ## Citation
 

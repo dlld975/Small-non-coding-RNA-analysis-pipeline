@@ -38,9 +38,6 @@ outputs/
 *.png
 *.pdf
 
-# Keep repository documentation PDFs
-!docs/**/*.pdf
-
 # OS files
 .DS_Store
 Thumbs.db
