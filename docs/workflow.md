@@ -1,15 +1,15 @@
 # Workflow
 
-This repository presents the small non-coding RNA pipeline as sectioned code blocks in the main `README.md`, with matching R templates and one Bash template in `scripts/`.
+This repository presents the small non-coding RNA pipeline as sectioned code blocks in the main `README.md`, with matching R and Bash templates in `scripts/`.
 
 Use the README sections in this order:
 
 1. Conventional Mapping and DE
 2. SPORTS Bash workflow, then SPORTS Summary to Count Matrix and R DE
 3. tDRMapper Bash workflow, then tDRMapper R DE
-4. proTRAC Bash cluster preparation, then proTRAC Cluster R DE
+4. proTRAC Bash cluster preparation, then choose either Cluster R DE or non-overlapping unique-cluster analysis
 5. General Count Matrix DE
-6. proTRAC Non-DE Unique Cluster Workflow
+6. proTRAC Non-DE Unique Cluster Workflow as an alternative to proTRAC Cluster R DE
 7. Volcano Plot
 8. MA Plot
 9. Heatmap
@@ -49,20 +49,22 @@ scripts/tdrmapper_run_workflow.sh
 scripts/tdrmapper_de.R
 ```
 
-proTRAC cluster DE:
+proTRAC:
+
+Option A, cluster count matrix followed by R DE:
 
 ```text
 scripts/protrac_run_prepare_clusters.sh
 scripts/protrac_cluster_de.R
 ```
 
-proTRAC unique/no-overlap clusters:
+Option B, non-overlapping unique clusters as an alternative to DE:
 
 ```text
 scripts/protrac_non_de_unique_clusters.sh
 ```
 
-This unique-cluster workflow is not a DESeq2 step.
+Option B is not a DESeq2 step. It merges treatment and control proTRAC GTF files separately, finds clusters with no overlap in the opposite group, and uses those unique BED files for gene intersection and functional study.
 
 ## How to Use the Code Sections
 
@@ -81,7 +83,7 @@ CONTROL
 
 Keep sample names consistent between count matrices and metadata files. DESeq2 requires count matrix columns and metadata row names to match exactly.
 
-Section 6 is intentionally not a DESeq2 step. It follows the proTRAC workflow for merging treatment and control GTFs separately, finding no-overlap unique clusters with BEDtools, and intersecting those unique clusters with genes for functional study.
+For proTRAC, use either the DE route or the non-overlapping route depending on the question. Use the DE route when comparing cluster counts statistically across samples. Use the non-overlapping route when the goal is to identify treatment-only or control-only clusters for downstream gene intersection and functional study.
 
 ## Suggested Output Organization
 
