@@ -16,7 +16,7 @@ Replace every placeholder such as `yourfile.fastq.gz`, `your_reference.fa`, `you
 |   |-- tdrmapper_de.R
 |   |-- protrac_cluster_de.R
 |   |-- general_count_matrix_de.R
-|   |-- non_overlapping_clusters.R
+|   |-- protrac_non_de_unique_clusters.sh
 |   `-- de_plots.R
 |-- config/
 |   `-- config.example.yml
@@ -65,7 +65,7 @@ The full workflow code is shown in sections below, and matching R script templat
 | tDRMapper DE | `scripts/tdrmapper_de.R` |
 | proTRAC Cluster DE | `scripts/protrac_cluster_de.R` |
 | General Count Matrix DE | `scripts/general_count_matrix_de.R` |
-| Non-overlapping Cluster Comparison | `scripts/non_overlapping_clusters.R` |
+| proTRAC non-DE unique/no-overlap clusters | `scripts/protrac_non_de_unique_clusters.sh` |
 | Volcano, MA, and heatmap plots | `scripts/de_plots.R` |
 
 Edit the user settings at the top of each script before running.
@@ -363,42 +363,187 @@ de <- run_deseq2(
 )
 ```
 
-## 6. Non-overlapping Cluster Comparison
+## 6. proTRAC Non-DE Unique Cluster Workflow
 
-Use this section when comparing clusters that are unique to treatment, unique to control, or shared between groups.
+This is not a DESeq2 differential-expression step. Use this workflow when you want to merge treatment proTRAC clusters into one combined GTF, merge control proTRAC clusters into one combined GTF, and then identify clusters that have no overlap in the opposite group.
 
-```r
-library(dplyr)
+The key outputs are:
 
-treatment_clusters <- read.delim("your_treatment_clusters.bed", header = FALSE)
-control_clusters <- read.delim("your_control_clusters.bed", header = FALSE)
+- `your_TREATMENT_unique_noOverlap.bed`: treatment-specific clusters with no overlap in control. Use these for gene intersection and functional study as treatment-specific/upregulated-like clusters.
+- `CONTROL_unique_noOverlap.bed`: control-specific clusters with no overlap in treatment. Use these for gene intersection and functional study as control-specific/downregulated-like clusters.
+- `your_TREATMENT_clusters_withGenes.tsv` and `CONTROL_clusters_withGenes.tsv`: unique clusters annotated with overlapping genes.
 
-colnames(treatment_clusters)[1:3] <- c("chr", "start", "end")
-colnames(control_clusters)[1:3] <- c("chr", "start", "end")
-
-cluster_key <- function(df) {
-  paste(df$chr, df$start, df$end, sep = ":")
-}
-
-treatment_clusters$cluster_id <- cluster_key(treatment_clusters)
-control_clusters$cluster_id <- cluster_key(control_clusters)
-
-treatment_only <- treatment_clusters[!treatment_clusters$cluster_id %in% control_clusters$cluster_id, ]
-control_only <- control_clusters[!control_clusters$cluster_id %in% treatment_clusters$cluster_id, ]
-shared_clusters <- treatment_clusters[treatment_clusters$cluster_id %in% control_clusters$cluster_id, ]
-
-write.table(treatment_only, "your_treatment_only_clusters.bed", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-write.table(control_only, "your_control_only_clusters.bed", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-write.table(shared_clusters, "your_shared_clusters.bed", sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
-```
-
-For coordinate-aware overlap, use BEDtools before importing into R:
+The full reusable script is `scripts/protrac_non_de_unique_clusters.sh`.
 
 ```bash
-bedtools intersect -v -a your_treatment_clusters.bed -b your_control_clusters.bed > your_treatment_only_clusters.bed
-bedtools intersect -v -a your_control_clusters.bed -b your_treatment_clusters.bed > your_control_only_clusters.bed
-bedtools intersect -u -a your_treatment_clusters.bed -b your_control_clusters.bed > your_shared_clusters.bed
+conda activate bioinfo
+cd "your_protrac_project_directory"
+
+treatment_label="your_TREATMENT"
+control_label="CONTROL"
+gene_gtf="your_gene_annotation.gtf"
+
+# 1. Merge treatment and control proTRAC cluster GTF files separately.
+cat proTRAC_your_treatment_sample*/clusters.gtf > "${treatment_label}combined.gtf"
+cat proTRAC_your_control_sample*/clusters.gtf > "${control_label}combined.gtf"
+
+# 2. Add gene_id to proTRAC cluster GTF attributes.
+awk 'BEGIN{FS=OFS="\t"} {
+  gsub(/.*piRNA cluster no: ([^;]+);.*/, "gene_id \"cluster_"$9"\";", $9)
+  print
+}' "${treatment_label}combined.gtf" > "${treatment_label}modified.gtf"
+
+awk 'BEGIN{FS=OFS="\t"} {
+  gsub(/.*piRNA cluster no: ([^;]+);.*/, "gene_id \"cluster_"$9"\";", $9)
+  print
+}' "${control_label}combined.gtf" > "${control_label}modified.gtf"
+
+# 3. Convert merged GTF files to BED6.
+awk 'BEGIN{FS=OFS="\t"} $3=="piRNA_cluster" {print $1, $4-1, $5, $9, ".", $7}' \
+  "${treatment_label}modified.gtf" > "${treatment_label}modified.bed"
+
+awk 'BEGIN{FS=OFS="\t"} $3=="piRNA_cluster" {print $1, $4-1, $5, $9, ".", $7}' \
+  "${control_label}modified.gtf" > "${control_label}modified.bed"
+
+sort -k1,1 -k2,2n "${treatment_label}modified.bed" > "${treatment_label}modified.sorted.bed"
+sort -k1,1 -k2,2n "${control_label}modified.bed" > "${control_label}modified.sorted.bed"
+
+# 4. Check chromosome naming before overlap.
+echo "${treatment_label} chroms:"
+cut -f1 "${treatment_label}modified.sorted.bed" | sort -u
+
+echo "${control_label} chroms:"
+cut -f1 "${control_label}modified.sorted.bed" | sort -u
+
+echo "Chroms in ${treatment_label} but not in ${control_label}:"
+comm -23 \
+  <(cut -f1 "${treatment_label}modified.sorted.bed" | sort -u) \
+  <(cut -f1 "${control_label}modified.sorted.bed" | sort -u)
+
+echo "Chroms in ${control_label} but not in ${treatment_label}:"
+comm -13 \
+  <(cut -f1 "${treatment_label}modified.sorted.bed" | sort -u) \
+  <(cut -f1 "${control_label}modified.sorted.bed" | sort -u)
+
+# 5. Classify any overlap as WITHIN / INCLUDES / OVERLAP_ONLY.
+bedtools intersect \
+  -a "${treatment_label}modified.sorted.bed" \
+  -b "${control_label}modified.sorted.bed" \
+  -wa -wb \
+  > "${treatment_label}_vs_${control_label}.overlap.tsv"
+
+awk -v treatment="$treatment_label" -v control="$control_label" 'BEGIN{FS=OFS="\t"}
+{
+  aS=$2; aE=$3
+  bS=$8; bE=$9
+  rel="OVERLAP_ONLY"
+  if (aS>=bS && aE<=bE) rel=treatment"_WITHIN_"control
+  else if (aS<=bS && aE>=bE) rel=treatment"_INCLUDES_"control
+  print $1,aS,aE,rel,$4,bS,bE,$10
+}' "${treatment_label}_vs_${control_label}.overlap.tsv" \
+  > "${treatment_label}_vs_${control_label}.classified.tsv"
+
+# 6. Main no-overlap outputs for downstream gene intersection.
+bedtools intersect \
+  -a "${treatment_label}modified.sorted.bed" \
+  -b "${control_label}modified.sorted.bed" \
+  -v \
+  > "${treatment_label}_unique_noOverlap.bed"
+
+bedtools intersect \
+  -a "${control_label}modified.sorted.bed" \
+  -b "${treatment_label}modified.sorted.bed" \
+  -v \
+  > "${control_label}_unique_noOverlap.bed"
+
+awk -v rel="${treatment_label}_WITHIN_${control_label}" '$4==rel' \
+  "${treatment_label}_vs_${control_label}.classified.tsv" \
+  > "${treatment_label}_within_${control_label}.tsv"
+
+awk -v rel="${treatment_label}_INCLUDES_${control_label}" '$4==rel' \
+  "${treatment_label}_vs_${control_label}.classified.tsv" \
+  > "${treatment_label}_includes_${control_label}.tsv"
+
+# 7. Convert gene annotation GTF to BED6.
+awk 'BEGIN{FS=OFS="\t"} $3=="gene" {
+  g=$9
+  sub(/.*gene_name "/, "", g)
+  sub(/".*/, "", g)
+  print $1, $4-1, $5, g, ".", $7
+}' "$gene_gtf" | sort -k1,1 -k2,2n > genes.bed
+
+# 8. Intersect treatment unique clusters with genes.
+# If cluster strand is ".", do not use -s. Add -s only when strand is reliable.
+bedtools intersect \
+  -a "${treatment_label}_unique_noOverlap.bed" \
+  -b genes.bed \
+  -wa -wb \
+  > "${treatment_label}_intersected_genes.bed"
+
+awk 'BEGIN{FS=OFS="\t"}
+{
+  key=$1":"$2"-"$3":"$6
+  gene=$10
+  if (gene=="") gene="NA"
+  if (!seen[key,gene]++) {
+    genes[key] = (genes[key]=="" ? gene : genes[key]","gene)
+  }
+}
+END{
+  for (k in genes) print k, genes[k]
+}' "${treatment_label}_intersected_genes.bed" > "${treatment_label}_genes_collapsed.tsv"
+
+awk 'BEGIN{FS=OFS="\t";
+  print "Cluster_ID","Chromosome","Start","End","Genes","Score","Strand"
+}
+ARGIND==1 {g[$1]=$2; next}
+ARGIND==2 {
+  key=$1":"$2"-"$3":"$6
+  cid="cluster_" FNR
+  gene_list=(key in g ? g[key] : "NA")
+  print cid,$1,$2,$3,gene_list,$5,$6
+}' "${treatment_label}_genes_collapsed.tsv" "${treatment_label}_unique_noOverlap.bed" \
+  > "${treatment_label}_clusters_withGenes.tsv"
+
+# 9. Intersect control unique clusters with genes.
+bedtools intersect \
+  -a "${control_label}_unique_noOverlap.bed" \
+  -b genes.bed \
+  -wa -wb \
+  > "${control_label}_intersected_genes.bed"
+
+awk 'BEGIN{FS=OFS="\t"}
+{
+  key=$1":"$2"-"$3":"$6
+  gene=$10
+  if (gene=="") gene="NA"
+  if (!seen[key,gene]++) {
+    genes[key] = (genes[key]=="" ? gene : genes[key]","gene)
+  }
+}
+END{
+  for (k in genes) print k, genes[k]
+}' "${control_label}_intersected_genes.bed" > "${control_label}_genes_collapsed.tsv"
+
+awk 'BEGIN{FS=OFS="\t";
+  print "Cluster_ID","Chromosome","Start","End","Genes","Score","Strand"
+}
+ARGIND==1 {g[$1]=$2; next}
+ARGIND==2 {
+  key=$1":"$2"-"$3":"$6
+  cid="cluster_" FNR
+  gene_list=(key in g ? g[key] : "NA")
+  print cid,$1,$2,$3,gene_list,$5,$6
+}' "${control_label}_genes_collapsed.tsv" "${control_label}_unique_noOverlap.bed" \
+  > "${control_label}_clusters_withGenes.tsv"
 ```
+
+Notes:
+
+- Use `*_unique_noOverlap.bed` files for downstream gene intersection and functional study.
+- Treatment unique clusters can be interpreted as treatment-specific/upregulated-like clusters, and control unique clusters as control-specific/downregulated-like clusters, but this is a presence/absence cluster comparison rather than a statistical DE test.
+- If the cluster strand is `.`, avoid `bedtools intersect -s`; strand-specific matching can return no gene overlaps.
+- In the gene-intersection output, gene names are expected in column 10 because `genes.bed` contributes `chr/start/end/gene` after `-wa -wb`.
 
 ## 7. Volcano Plot
 

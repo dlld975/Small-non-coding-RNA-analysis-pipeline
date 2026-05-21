@@ -1,6 +1,6 @@
 # Workflow
 
-This repository presents the small non-coding RNA pipeline as sectioned code blocks in the main `README.md` and as matching R script templates in `scripts/`.
+This repository presents the small non-coding RNA pipeline as sectioned code blocks in the main `README.md`, with matching R templates and one Bash template in `scripts/`.
 
 Use the README sections in this order:
 
@@ -9,14 +9,14 @@ Use the README sections in this order:
 3. tDRMapper DE
 4. proTRAC Cluster DE
 5. General Count Matrix DE
-6. Non-overlapping Cluster Comparison
+6. proTRAC Non-DE Unique Cluster Workflow
 7. Volcano Plot
 8. MA Plot
 9. Heatmap
 
 ## Script Templates
 
-The same workflows are available as editable R scripts:
+The same workflows are available as editable script templates:
 
 ```text
 scripts/
@@ -25,13 +25,13 @@ scripts/
 |-- tdrmapper_de.R
 |-- protrac_cluster_de.R
 |-- general_count_matrix_de.R
-|-- non_overlapping_clusters.R
+|-- protrac_non_de_unique_clusters.sh
 `-- de_plots.R
 ```
 
 ## How to Use the Code Sections
 
-Copy the section you need into R or RStudio, then replace placeholders such as:
+Copy the section you need into R, RStudio, or Bash, then replace placeholders such as:
 
 ```text
 your_working_directory
@@ -45,6 +45,8 @@ CONTROL
 ```
 
 Keep sample names consistent between count matrices and metadata files. DESeq2 requires count matrix columns and metadata row names to match exactly.
+
+Section 6 is intentionally not a DESeq2 step. It follows the proTRAC workflow for merging treatment and control GTFs separately, finding no-overlap unique clusters with BEDtools, and intersecting those unique clusters with genes for functional study.
 
 ## Suggested Output Organization
 
